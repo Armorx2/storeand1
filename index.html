@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>المتجر</title>
+
 <style>
     body {
         margin: 0;
@@ -13,7 +14,7 @@
     }
 
     .glow {
-        box-shadow: 0 0 15px rgba(255,255,255,0.3);
+        box-shadow: 0 0 15px rgba(255,255,255,0.2);
     }
 
     .header {
@@ -34,7 +35,6 @@
         background: rgba(255,255,255,0.05);
         padding: 20px;
         border-radius: 10px;
-        box-shadow: 0 0 10px rgba(255,255,255,0.15);
     }
 
     .item img {
@@ -55,6 +55,12 @@
         width: 30px;
     }
 
+    .price {
+        margin: 10px 0;
+        font-size: 18px;
+        color: #c5c5c5;
+    }
+
     .add-btn {
         width: 100%;
         padding: 12px;
@@ -65,21 +71,46 @@
         color: white;
         cursor: pointer;
         margin-top: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
         box-shadow: 0 0 10px rgba(113,54,138,0.8);
+    }
+
+    .btn-icon {
+        width: 22px;
+    }
+
+    /* صفحة الكمية */
+    #quantityPage {
+        display: none;
+        padding: 20px;
+    }
+
+    .qty-box {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+        margin: 20px 0;
+        font-size: 30px;
+    }
+
+    .qty-btn {
+        background: #71368a;
+        padding: 8px 18px;
+        font-size: 25px;
+        border-radius: 6px;
+        color: white;
+        cursor: pointer;
+        border: none;
     }
 
     /* صفحة السلة */
     #cartPage {
         display: none;
         padding: 20px;
-    }
-
-    .input-discount {
-        width: 70%;
-        padding: 10px;
-        margin-top: 15px;
-        border-radius: 5px;
-        border: none;
     }
 
     .buy-btn {
@@ -95,40 +126,89 @@
         box-shadow: 0 0 10px rgba(113,54,138,0.8);
     }
 
-    /* صفحة الفاتورة */
+    /* الفاتورة */
     #invoicePage {
         display: none;
         padding: 30px;
         font-size: 25px;
     }
+
+    .soldout {
+        color: red;
+        font-size: 22px;
+        font-weight: bold;
+        margin-top: 15px;
+    }
 </style>
 
 <script>
 let cart = [];
+let currentItem = null;
+let currentPrice = 0;
+let quantity = 1;
 
-function addToCart(itemName) {
-    cart.push(itemName);
-    alert("تمت الإضافة إلى السلة!");
+/* فتح صفحة الكمية */
+function openQuantityPage(name, price, soldout = false) {
+    if (soldout) return;
+
+    currentItem = name;
+    currentPrice = price;
+    quantity = 1;
+
+    document.getElementById("storePage").style.display = "none";
+    document.getElementById("quantityPage").style.display = "block";
+
+    document.getElementById("qtyName").textContent = name;
+    document.getElementById("qtyPrice").textContent = price;
+    document.getElementById("qtyAmount").textContent = quantity;
 }
 
+/* تعديل الكمية */
+function addQty() {
+    quantity++;
+    document.getElementById("qtyAmount").textContent = quantity;
+}
+
+function minQty() {
+    if (quantity > 1) quantity--;
+    document.getElementById("qtyAmount").textContent = quantity;
+}
+
+/* إضافة للسلة */
+function addToCartFinal() {
+    cart.push({
+        name: currentItem,
+        price: currentPrice,
+        quantity: quantity
+    });
+
+    openCart();
+}
+
+/* فتح السلة */
 function openCart() {
     document.getElementById("storePage").style.display = "none";
+    document.getElementById("quantityPage").style.display = "none";
     document.getElementById("cartPage").style.display = "block";
 
     let list = document.getElementById("cartItems");
     list.innerHTML = "";
+
+    let total = 0;
+
     cart.forEach(c => {
-        let li = document.createElement("p");
-        li.textContent = "- " + c;
-        list.appendChild(li);
+        let p = document.createElement("p");
+        p.textContent = `${c.name} × ${c.quantity} = ${c.price * c.quantity} ريال`;
+        list.appendChild(p);
+        total += c.price * c.quantity;
     });
+
+    document.getElementById("totalPrice").textContent = total;
 }
 
+/* شراء */
 function buyNow() {
-    if(cart.length === 0){
-        alert("سلتك فاضية!");
-        return;
-    }
+    if (cart.length === 0) return;
 
     let invoiceNumber = Math.floor(1000 + Math.random() * 9000);
 
@@ -136,87 +216,73 @@ function buyNow() {
     document.getElementById("invoicePage").style.display = "block";
     document.getElementById("invoiceNum").textContent = invoiceNumber;
 
+    let message = cart.map(c => `${c.name} × ${c.quantity} = ${c.price * c.quantity} ريال`).join("\n");
+
     fetch("https://discord.com/api/webhooks/1440394430325719081/JvGD0C8XFFGgWxoclu6PsahzGsfX6iBQqgQw1BbrlhlsA5U4VJOGS0oLEA7Y6IiAJhx2", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({
-            content: `🛒 **طلب جديد**\nرقم الفاتورة: ${invoiceNumber}\nالسلع:\n${cart.join("\n")}`
+            content: `🛒 **طلب جديد**\nرقم الفاتورة: ${invoiceNumber}\n\n${message}`
         })
     });
 }
 </script>
-</head>
 
+</head>
 <body>
 
 <div class="header">
     <img class="cart-icon" onclick="openCart()" 
-         src="https://i.postimg.cc/g2P96k2F/IMG-2171.png">
+    src="https://i.postimg.cc/g2P96k2F/IMG-2171.png">
 </div>
 
 <!-- صفحة المتجر -->
 <div id="storePage">
 
-    <!-- مثال سلعة رقم 1: يوزرات دسكورد -->
+    <!-- ٢٥٠ عضو (اونلاين) -->
     <div class="item glow">
-        <img src="https://i.postimg.cc/HxPnp7Hx/IMG-2172-removebg-preview.png">
+        <img src="/mnt/data/802BFC83-903D-4108-BCEA-C22E8B27F33B.jpeg">
         <div class="item-title">
-            <img class="icon-small" src="https://i.postimg.cc/g2P96k2F/IMG-2171.png">
-            يوزرات دسكورد
+            <img class="icon-small" src="https://i.postimg.cc/g2P96k2F/IMG-2171.png">    
+            ٢٥٠ عضو ( اونلاين )
         </div>
-        <button class="add-btn" onclick="addToCart('يوزرات دسكورد')">
+        <p class="price">السعر: 12 ريال</p>
+        <button class="add-btn" onclick="openQuantityPage('٢٥٠ عضو ( اونلاين )', 12)">
+            <img class="btn-icon" src="https://i.postimg.cc/g2P96k2F/IMG-2171.png">
             إضافة إلى السلة
         </button>
     </div>
 
-    <!-- سلعة رقم 2: يوزرات إنستا -->
+    <!-- ٢٥٠ عضو ( اوفلاين ) -->
     <div class="item glow">
-        <img src="https://i.postimg.cc/QtRBQWzf/IMG-2173.jpg">
+        <img src="/mnt/data/802BFC83-903D-4108-BCEA-C22E8B27F33B.jpeg">
         <div class="item-title">
-            <img class="icon-small" src="https://i.postimg.cc/g2P96k2F/IMG-2171.png">
-            يوزرات إنستا
+            <img class="icon-small" src="https://i.postimg.cc/g2P96k2F/IMG-2171.png">    
+            ٢٥٠ عضو ( اوفلاين )
         </div>
-        <button class="add-btn" onclick="addToCart('يوزرات إنستا')">
+        <p class="price">السعر: 9 ريال</p>
+        <button class="add-btn" onclick="openQuantityPage('٢٥٠ عضو ( اوفلاين )', 9)">
+            <img class="btn-icon" src="https://i.postimg.cc/g2P96k2F/IMG-2171.png">
             إضافة إلى السلة
         </button>
     </div>
 
-    <!-- سلعة رقم 3: يوزرات تليقرام -->
-    <div class="item glow">
-        <img src="https://i.postimg.cc/4ykd7R7G/IMG-2174.jpg">
-        <div class="item-title">
-            <img class="icon-small" src="https://i.postimg.cc/g2P96k2F/IMG-2171.png">
-            يوزرات تليقرام
-        </div>
-        <button class="add-btn" onclick="addToCart('يوزرات تليقرام')">
-            إضافة إلى السلة
-        </button>
+</div>
+
+<!-- صفحة الكمية -->
+<div id="quantityPage">
+    <h1 id="qtyName"></h1>
+    <p>السعر: <span id="qtyPrice"></span> ريال</p>
+
+    <div class="qty-box">
+        <button class="qty-btn" onclick="addQty()">+</button>
+        <span id="qtyAmount">1</span>
+        <button class="qty-btn" onclick="minQty()">-</button>
     </div>
 
-    <!-- سلعة رقم 4: أعضاء توكنات -->
-    <div class="item glow">
-        <img src="https://i.postimg.cc/HxPnp7Hx/IMG-2172-removebg-preview.png">
-        <div class="item-title">
-            <img class="icon-small" src="https://i.postimg.cc/g2P96k2F/IMG-2171.png">
-            أعضاء توكنات
-        </div>
-        <button class="add-btn" onclick="addToCart('أعضاء توكنات')">
-            إضافة إلى السلة
-        </button>
-    </div>
-
-    <!-- سلعة رقم 5: بوستات -->
-    <div class="item glow">
-        <img src="https://i.postimg.cc/m2dsKGb0/IMG-2175.jpg">
-        <div class="item-title">
-            <img class="icon-small" src="https://i.postimg.cc/g2P96k2F/IMG-2171.png">
-            بوستات
-        </div>
-        <button class="add-btn" onclick="addToCart('بوستات')">
-            إضافة إلى السلة
-        </button>
-    </div>
-
+    <button class="add-btn" onclick="addToCartFinal()">
+        إضافة للسلة
+    </button>
 </div>
 
 <!-- صفحة السلة -->
@@ -224,13 +290,7 @@ function buyNow() {
     <h1>سلتك</h1>
     <div id="cartItems"></div>
 
-    <h3>كود الخصم:</h3>
-    <input class="input-discount" placeholder="أدخل كود الخصم">
-
-    <h4>الأكواد المتاحة:</h4>
-    <p>كود 1</p>
-    <p>كود 2</p>
-    <p>كود 3</p>
+    <h2>المجموع: <span id="totalPrice">0</span> ريال</h2>
 
     <button class="buy-btn" onclick="buyNow()">شراء السلع</button>
 </div>
