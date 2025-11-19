@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>المتجر</title>
+<style>
+    body {
+        margin: 0;
+        font-family: sans-serif;
+        background: #001929;
+        color: white;
+        text-align: center;
+    }
+
+    .glow {
+        box-shadow: 0 0 15px rgba(255,255,255,0.3);
+    }
+
+    .header {
+        width: 100%;
+        padding: 15px;
+        text-align: right;
+    }
+
+    .cart-icon {
+        width: 45px;
+        cursor: pointer;
+    }
+
+    .item {
+        width: 90%;
+        max-width: 350px;
+        margin: 25px auto;
+        background: rgba(255,255,255,0.05);
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(255,255,255,0.15);
+    }
+
+    .item img {
+        width: 100%;
+        border-radius: 10px;
+    }
+
+    .item-title {
+        font-size: 22px;
+        margin: 10px 0;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 5px;
+    }
+
+    .icon-small {
+        width: 30px;
+    }
+
+    .add-btn {
+        width: 100%;
+        padding: 12px;
+        background: #71368a;
+        border: none;
+        border-radius: 8px;
+        font-size: 18px;
+        color: white;
+        cursor: pointer;
+        margin-top: 12px;
+        box-shadow: 0 0 10px rgba(113,54,138,0.8);
+    }
+
+    /* صفحة السلة */
+    #cartPage {
+        display: none;
+        padding: 20px;
+    }
+
+    .input-discount {
+        width: 70%;
+        padding: 10px;
+        margin-top: 15px;
+        border-radius: 5px;
+        border: none;
+    }
+
+    .buy-btn {
+        width: 80%;
+        padding: 14px;
+        background: #71368a;
+        border: none;
+        border-radius: 10px;
+        font-size: 20px;
+        color: white;
+        cursor: pointer;
+        margin-top: 20px;
+        box-shadow: 0 0 10px rgba(113,54,138,0.8);
+    }
+
+    /* صفحة الفاتورة */
+    #invoicePage {
+        display: none;
+        padding: 30px;
+        font-size: 25px;
+    }
+</style>
+
+<script>
+let cart = [];
+
+function addToCart(itemName) {
+    cart.push(itemName);
+    alert("تمت الإضافة إلى السلة!");
+}
+
+function openCart() {
+    document.getElementById("storePage").style.display = "none";
+    document.getElementById("cartPage").style.display = "block";
+
+    let list = document.getElementById("cartItems");
+    list.innerHTML = "";
+    cart.forEach(c => {
+        let li = document.createElement("p");
+        li.textContent = "- " + c;
+        list.appendChild(li);
+    });
+}
+
+function buyNow() {
+    if(cart.length === 0){
+        alert("سلتك فاضية!");
+        return;
+    }
+
+    let invoiceNumber = Math.floor(1000 + Math.random() * 9000);
+
+    document.getElementById("cartPage").style.display = "none";
+    document.getElementById("invoicePage").style.display = "block";
+    document.getElementById("invoiceNum").textContent = invoiceNumber;
+
+    fetch("https://discord.com/api/webhooks/1440394430325719081/JvGD0C8XFFGgWxoclu6PsahzGsfX6iBQqgQw1BbrlhlsA5U4VJOGS0oLEA7Y6IiAJhx2", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            content: `🛒 **طلب جديد**\nرقم الفاتورة: ${invoiceNumber}\nالسلع:\n${cart.join("\n")}`
+        })
+    });
+}
+</script>
+</head>
+
+<body>
+
+<div class="header">
+    <img class="cart-icon" onclick="openCart()" 
+         src="https://i.postimg.cc/g2P96k2F/IMG-2171.png">
+</div>
+
+<!-- صفحة المتجر -->
+<div id="storePage">
+
+    <!-- مثال سلعة رقم 1: يوزرات دسكورد -->
+    <div class="item glow">
+        <img src="https://i.postimg.cc/HxPnp7Hx/IMG-2172-removebg-preview.png">
+        <div class="item-title">
+            <img class="icon-small" src="https://i.postimg.cc/g2P96k2F/IMG-2171.png">
+            يوزرات دسكورد
+        </div>
+        <button class="add-btn" onclick="addToCart('يوزرات دسكورد')">
+            إضافة إلى السلة
+        </button>
+    </div>
+
+    <!-- سلعة رقم 2: يوزرات إنستا -->
+    <div class="item glow">
+        <img src="https://i.postimg.cc/QtRBQWzf/IMG-2173.jpg">
+        <div class="item-title">
+            <img class="icon-small" src="https://i.postimg.cc/g2P96k2F/IMG-2171.png">
+            يوزرات إنستا
+        </div>
+        <button class="add-btn" onclick="addToCart('يوزرات إنستا')">
+            إضافة إلى السلة
+        </button>
+    </div>
+
+    <!-- سلعة رقم 3: يوزرات تليقرام -->
+    <div class="item glow">
+        <img src="https://i.postimg.cc/4ykd7R7G/IMG-2174.jpg">
+        <div class="item-title">
+            <img class="icon-small" src="https://i.postimg.cc/g2P96k2F/IMG-2171.png">
+            يوزرات تليقرام
+        </div>
+        <button class="add-btn" onclick="addToCart('يوزرات تليقرام')">
+            إضافة إلى السلة
+        </button>
+    </div>
+
+    <!-- سلعة رقم 4: أعضاء توكنات -->
+    <div class="item glow">
+        <img src="https://i.postimg.cc/HxPnp7Hx/IMG-2172-removebg-preview.png">
+        <div class="item-title">
+            <img class="icon-small" src="https://i.postimg.cc/g2P96k2F/IMG-2171.png">
+            أعضاء توكنات
+        </div>
+        <button class="add-btn" onclick="addToCart('أعضاء توكنات')">
+            إضافة إلى السلة
+        </button>
+    </div>
+
+    <!-- سلعة رقم 5: بوستات -->
+    <div class="item glow">
+        <img src="https://i.postimg.cc/m2dsKGb0/IMG-2175.jpg">
+        <div class="item-title">
+            <img class="icon-small" src="https://i.postimg.cc/g2P96k2F/IMG-2171.png">
+            بوستات
+        </div>
+        <button class="add-btn" onclick="addToCart('بوستات')">
+            إضافة إلى السلة
+        </button>
+    </div>
+
+</div>
+
+<!-- صفحة السلة -->
+<div id="cartPage">
+    <h1>سلتك</h1>
+    <div id="cartItems"></div>
+
+    <h3>كود الخصم:</h3>
+    <input class="input-discount" placeholder="أدخل كود الخصم">
+
+    <h4>الأكواد المتاحة:</h4>
+    <p>كود 1</p>
+    <p>كود 2</p>
+    <p>كود 3</p>
+
+    <button class="buy-btn" onclick="buyNow()">شراء السلع</button>
+</div>
+
+<!-- صفحة الفاتورة -->
+<div id="invoicePage">
+    <h1>تمت عملية الشراء</h1>
+    <p>رقم الفاتورة:</p>
+    <h2 id="invoiceNum"></h2>
+</div>
+
+</body>
+</html>
